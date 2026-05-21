@@ -1,0 +1,101 @@
+name: 🧠 SHHE — CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+
+  # ════════════════════════════════════════════════════════
+  #  JOB 1 — TESTS & QUALITÉ DU CODE
+  # ════════════════════════════════════════════════════════
+  test:
+    name: 🧪 Tests unitaires
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout du code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 📦 Installation des dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: 🧪 Lancement des tests
+        env:
+          # Variables d'environnement pour les tests (pas de vraie BDD)
+          DB_HOST: localhost
+          DB_USER: root
+          DB_PASSWORD: root
+          DB_NAME: smart_health_db
+          SECRET_KEY: test_secret_key_ci
+        run: |
+          pytest tests/ -v --tb=short \
+            --ignore=tests/test_routes.py \
+            --cov=models \
+            --cov=patterns \
+            --cov-report=term-missing
+
+      - name: 📊 Rapport de couverture
+        run: |
+          pytest tests/test_score_calculator.py tests/test_patterns.py \
+            --cov=models --cov=patterns \
+            --cov-report=xml \
+            --cov-report=term-missing || true
+
+  # ════════════════════════════════════════════════════════
+  #  JOB 2 — LINT & FORMAT
+  # ════════════════════════════════════════════════════════
+  lint:
+    name: 🔍 Qualité du code
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 📦 Installation outils qualité
+        run: |
+          pip install flake8
+
+      - name: 🔍 Vérification flake8
+        run: |
+          # Vérifier uniquement les erreurs critiques (E9=erreurs syntaxe, F=erreurs logiques)
+          flake8 models/ patterns/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          # Avertissements style (non bloquant)
+          flake8 models/ patterns/ --count --max-line-length=120 --statistics || true
+
+  # ════════════════════════════════════════════════════════
+  #  JOB 3 — BUILD DOCKER
+  # ════════════════════════════════════════════════════════
+  docker:
+    name: 🐳 Build Docker
+    runs-on: ubuntu-latest
+    needs: test   # Lance seulement si les tests passent
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🐳 Build de l'image Docker
+        run: |
+          docker build -t shhe-app:${{ github.sha }} .
+          echo "✅ Image Docker construite avec succès"
+
+      - name: 🔍 Vérification de l'image
+        run: |
+          docker images shhe-app
+          echo "✅ Image disponible"

@@ -1,0 +1,176 @@
+{% extends "base.html" %}{% block title %}Statistiques — SHHE{% endblock %}
+{% block content %}
+<!-- Fond image -->
+<div style="position:fixed; inset:0; z-index:0; background-image:url('/static/img/bg_stats.jpg'); background-size:cover; background-position:center;">
+  <div style="position:absolute; inset:0; background:rgba(5,10,22,0.72);"></div>
+</div>
+<div class="p-8" id="stats-content" style="position:relative; z-index:1;">
+  <h1 class="text-2xl font-bold text-[#4fc3f7] mb-6" data-i18n="stats_title">📊 Mes statistiques</h1>
+  {% if not historique %}
+  <div class="card p-12 text-center">
+    <div class="text-5xl mb-4">📋</div>
+    <p class="text-[#8b949e]" data-i18n="stats_no_data">Aucune donnée.</p>
+    <a href="/questionnaire" class="btn-primary px-6 py-3 rounded-lg mt-4 inline-block font-semibold" data-i18n="stats_start">Commencer →</a>
+  </div>
+  {% else %}
+  <div class="grid grid-cols-4 gap-4 mb-8" style="position:relative;z-index:1">
+    <div class="card p-5 text-center"><div class="text-xs text-[#8b949e] mb-2" data-i18n="stats_days">Jours</div><div class="text-3xl font-bold text-[#4fc3f7]">{{ statistiques.total_jours or 0 }}</div></div>
+    <div class="card p-5 text-center"><div class="text-xs text-[#8b949e] mb-2" data-i18n="stats_avg">Moyenne</div><div class="text-3xl font-bold text-[#69f0ae]">{{ statistiques.moyenne_globale or 0 }}/100</div></div>
+    <div class="card p-5 text-center"><div class="text-xs text-[#8b949e] mb-2" data-i18n="stats_best">Meilleur</div><div class="text-3xl font-bold text-[#ffd740]">{{ statistiques.meilleur_score or 0 }}/100</div></div>
+    <div class="card p-5 text-center"><div class="text-xs text-[#8b949e] mb-2" data-i18n="stats_worst">Pire</div><div class="text-3xl font-bold text-[#ff7043]">{{ statistiques.pire_score or 0 }}/100</div></div>
+  </div>
+  <div class="card p-6 mb-6">
+    <h2 class="font-semibold text-[#e6edf3] mb-4" data-i18n="stats_dims">📊 Moyennes par dimension</h2>
+    <div class="space-y-4">
+      {% for dk,val,col in [('stats_sommeil',statistiques.moy_sommeil or 0,'#ce93d8'),('stats_stress',statistiques.moy_stress or 0,'#69f0ae'),('stats_conc',statistiques.moy_concentration or 0,'#80deea'),('stats_activ',statistiques.moy_activite or 0,'#ffd740'),('stats_nutri',statistiques.moy_nutrition or 0,'#ff8a65')] %}
+      <div class="flex items-center gap-4">
+        <span class="text-sm text-[#8b949e] w-36" data-i18n="{{ dk }}">{{ dk }}</span>
+        <div class="flex-1 bg-[#21262d] rounded-full h-3"><div class="h-3 rounded-full" style="width:{{ val }}%;background:{{ col }}"></div></div>
+        <span class="text-sm font-bold w-12 text-right" style="color:{{ col }}">{{ val }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="grid grid-cols-2 gap-6 mb-6">
+    <div class="card p-6"><h2 class="font-semibold text-[#e6edf3] mb-4" data-i18n="stats_chart1" id="c1-title">Score global</h2><canvas id="chartGlobal" height="200"></canvas></div>
+    <div class="card p-6"><h2 class="font-semibold text-[#e6edf3] mb-4" data-i18n="stats_chart2" id="c2-title">Dimensions</h2><canvas id="chartDimensions" height="200"></canvas></div>
+  </div>
+  <div class="card p-6">
+    <h2 class="font-semibold text-[#e6edf3] mb-4" data-i18n="stats_history">📋 Historique</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="border-b border-[#21262d] text-[#8b949e]">
+          <th class="text-left py-3 px-3" data-i18n="stats_date">Date</th>
+          <th class="text-center py-3 px-2" data-i18n="stats_global">Global</th>
+          <th class="text-center py-3 px-2" data-i18n="stats_sommeil">Sommeil</th>
+          <th class="text-center py-3 px-2" data-i18n="stats_stress">Stress</th>
+          <th class="text-center py-3 px-2" data-i18n="stats_activ">Activité</th>
+          <th class="text-center py-3 px-2" data-i18n="stats_nutri">Nutrition</th>
+          <th class="text-center py-3 px-2" data-i18n="stats_niveau">Niveau</th>
+        </tr></thead>
+        <tbody>{% for row in historique %}
+          {% set nc={'Excellent':'text-[#69f0ae]','Bon':'text-[#4fc3f7]','Moyen':'text-[#ffd740]','Faible':'text-[#ff7043]','Critique':'text-[#f85149]'} %}
+          <tr class="border-b border-[#0d1117] hover:bg-[#21262d]">
+            <td class="py-3 px-3 text-[#8b949e]">{{ row.date_score }}</td>
+            <td class="py-3 px-2 text-center font-bold {{ nc.get(row.niveau,'text-[#4fc3f7]') }}">{{ row.score_global }}</td>
+            <td class="py-3 px-2 text-center text-[#ce93d8]">{{ row.score_sommeil }}</td>
+            <td class="py-3 px-2 text-center text-[#69f0ae]">{{ row.score_stress }}</td>
+            <td class="py-3 px-2 text-center text-[#ffd740]">{{ row.score_activite }}</td>
+            <td class="py-3 px-2 text-center text-[#ff8a65]">{{ row.score_nutrition }}</td>
+            <td class="py-3 px-2 text-center text-xs {{ nc.get(row.niveau,'text-[#4fc3f7]') }} niv-cell" data-niv="{{ row.niveau }}">{{ row.niveau }}</td>
+          </tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>{% endif %}
+</div>{% endblock %}
+
+{% block scripts %}
+<script>
+// Données injectées par Flask
+const _labels = {{ chart_labels|safe }};
+const _g   = {{ chart_global|safe }};
+const _som = {{ chart_sommeil|safe }};
+const _str = {{ chart_stress|safe }};
+const _act = {{ chart_activite|safe }};
+const _nut = {{ chart_nutrition|safe }};
+const _con = {{ chart_conc|safe }};
+
+let ch1 = null, ch2 = null;
+
+function buildCharts() {
+  const el1 = document.getElementById('chartGlobal');
+  const el2 = document.getElementById('chartDimensions');
+  if (!el1 || !el2 || typeof Chart === 'undefined') return;
+
+  // Détruire les anciens si rechargement
+  if (ch1) { ch1.destroy(); ch1 = null; }
+  if (ch2) { ch2.destroy(); ch2 = null; }
+
+  const opts = {
+    responsive: true,
+    maintainAspectRatio: true,
+    animation: { duration: 600 },
+    plugins: {
+      legend: { labels: { color: '#8b949e', font: { size: 11 } } }
+    },
+    scales: {
+      x: {
+        ticks: { color: '#6b7280', font: { size: 10 }, maxRotation: 45 },
+        grid: { color: '#21262d' }
+      },
+      y: {
+        min: 0, max: 100,
+        ticks: { color: '#6b7280' },
+        grid: { color: '#21262d' }
+      }
+    }
+  };
+
+  // ── Graphique 1 : score global ──────────────────────────────────────────
+  ch1 = new Chart(el1, {
+    type: 'line',
+    data: {
+      labels: _labels,
+      datasets: [{
+        label: T('stats_chart1'),
+        data: _g,
+        borderColor: '#4fc3f7',
+        backgroundColor: 'rgba(79,195,247,0.12)',
+        tension: 0.35,
+        fill: true,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        borderWidth: 2.5
+      }]
+    },
+    options: { ...opts }
+  });
+
+  // ── Graphique 2 : dimensions ────────────────────────────────────────────
+  ch2 = new Chart(el2, {
+    type: 'line',
+    data: {
+      labels: _labels,
+      datasets: [
+        { label: T('stats_sommeil'), data: _som, borderColor: '#ce93d8', tension: 0.35, pointRadius: 4, borderWidth: 2 },
+        { label: T('stats_stress'),  data: _str, borderColor: '#69f0ae', tension: 0.35, pointRadius: 4, borderWidth: 2 },
+        { label: T('stats_activ'),   data: _act, borderColor: '#ffd740', tension: 0.35, pointRadius: 4, borderWidth: 2 },
+        { label: T('stats_nutri'),   data: _nut, borderColor: '#ff8a65', tension: 0.35, pointRadius: 4, borderWidth: 2 },
+        { label: T('stats_conc'),    data: _con, borderColor: '#80deea', tension: 0.35, pointRadius: 4, borderWidth: 2 },
+      ]
+    },
+    options: { ...opts }
+  });
+}
+
+function onLangChange(l) {
+  // Traduire niveaux dans le tableau
+  document.querySelectorAll('.niv-cell').forEach(el => {
+    el.textContent = T('niv_' + el.dataset.niv) || el.dataset.niv;
+  });
+  // Mettre à jour légendes des graphiques
+  if (ch1) {
+    ch1.data.datasets[0].label = T('stats_chart1');
+    ch1.update('none');
+  }
+  if (ch2) {
+    const keys = ['stats_sommeil','stats_stress','stats_activ','stats_nutri','stats_conc'];
+    ch2.data.datasets.forEach((d, i) => { d.label = T(keys[i]); });
+    ch2.update('none');
+  }
+}
+
+// Attendre que le DOM ET Chart.js soient prêts
+document.addEventListener('DOMContentLoaded', () => {
+  // Petit délai pour s'assurer que Chart.js CDN est bien chargé
+  function tryBuild(attempts) {
+    if (typeof Chart !== 'undefined') {
+      buildCharts();
+    } else if (attempts > 0) {
+      setTimeout(() => tryBuild(attempts - 1), 200);
+    }
+  }
+  tryBuild(10);
+});
+</script>{% endblock %}

@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% block title %}Paramètres — SHHE{% endblock %}
+
+{% block content %}
+<div style="position:fixed; inset:0; z-index:0; background-image:url('/static/img/bg_pages.jpg'); background-size:cover; background-position:center;">
+  <div style="position:absolute; inset:0; background:rgba(5,10,22,0.72);"></div>
+</div>
+
+<div style="position:relative; z-index:1; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px;">
+  <div style="width:100%; max-width:580px;">
+
+    <h1 class="text-2xl font-bold mb-6" style="color:#4fc3f7" data-i18n="set_title">⚙️ Paramètres</h1>
+
+    <!-- Langue -->
+    <div style="background:rgba(10,20,40,0.80); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; margin-bottom:16px;">
+      <h2 class="font-semibold mb-4 text-white" data-i18n="set_lang_title">🌍 Langue</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <button onclick="setLang('fr');syncLangBtns()" id="sl-fr"
+          style="padding:16px; border-radius:12px; text-align:center; cursor:pointer; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); transition:all 0.2s;">
+          <div style="font-size:32px; margin-bottom:6px;">🇫🇷</div>
+          <div style="font-size:13px; font-weight:600; color:white;">Français</div>
+          <div style="font-size:11px; color:#7ecab0;">Par défaut</div>
+        </button>
+        <button onclick="setLang('en');syncLangBtns()" id="sl-en"
+          style="padding:16px; border-radius:12px; text-align:center; cursor:pointer; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); transition:all 0.2s;">
+          <div style="font-size:32px; margin-bottom:6px;">🇬🇧</div>
+          <div style="font-size:13px; font-weight:600; color:white;">English</div>
+          <div style="font-size:11px; color:#7ecab0;">Default</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Notifications navigateur uniquement -->
+    <div style="background:rgba(10,20,40,0.80); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; margin-bottom:16px;">
+      <h2 class="font-semibold mb-1 text-white" data-i18n="set_notif_title">🔔 Notifications</h2>
+      <p class="text-xs mb-5" style="color:#7ecab0" data-i18n="set_notif_sub">Reçois un rappel dans le navigateur pour ne jamais oublier ton questionnaire.</p>
+
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-sm text-white" data-i18n="reminder_time">Heure de rappel</span>
+        <div class="flex gap-2">
+          <input type="time" id="set-time" value="20:00"
+            style="padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.06); color:white; font-size:13px; outline:none;"
+            onfocus="this.style.borderColor='#20b28c'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+          <button onclick="saveTimeSet()"
+            style="padding:8px 16px; border-radius:10px; background:#20b28c; border:none; color:white; font-size:12px; font-weight:600; cursor:pointer;"
+            data-i18n="save">Sauver</button>
+        </div>
+      </div>
+
+      <div id="set-perm-status" class="text-xs mb-3" style="color:#7ecab0;"></div>
+
+      <div class="flex gap-3">
+        <button onclick="requestNotifPermission()"
+          style="flex:1; padding:11px; border-radius:10px; background:rgba(32,178,140,0.15); border:1px solid #20b28c; color:#20b28c; font-size:12px; font-weight:600; cursor:pointer;"
+          data-i18n="enable_notif">🔔 Activer</button>
+        <button onclick="disableNotifications();refreshSettingsStatus()"
+          style="flex:1; padding:11px; border-radius:10px; background:rgba(239,68,68,0.1); border:1px solid #ef4444; color:#ef4444; font-size:12px; font-weight:600; cursor:pointer;"
+          data-i18n="disable_notif">🔕 Désactiver</button>
+      </div>
+    </div>
+
+    <!-- Modifier profil -->
+    <div style="background:rgba(10,20,40,0.80); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; margin-bottom:16px;">
+      <h2 class="font-semibold mb-4 text-white">✏️ <span data-i18n="set_edit_profile">Modifier mon profil</span></h2>
+      <div class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs mb-1" style="color:#7ecab0" data-i18n="set_prenom">Prénom</label>
+            <input type="text" id="edit-prenom" value="{{ user.prenom }}"
+              style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.06); color:white; font-size:13px; outline:none; box-sizing:border-box;"
+              onfocus="this.style.borderColor='#20b28c'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+          </div>
+          <div>
+            <label class="block text-xs mb-1" style="color:#7ecab0" data-i18n="set_nom">Nom</label>
+            <input type="text" id="edit-nom" value="{{ user.nom }}"
+              style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.06); color:white; font-size:13px; outline:none; box-sizing:border-box;"
+              onfocus="this.style.borderColor='#20b28c'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs mb-1" style="color:#7ecab0" data-i18n="set_email">Email</label>
+          <input type="email" id="edit-email" value="{{ user.email }}"
+            style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.06); color:white; font-size:13px; outline:none; box-sizing:border-box;"
+            onfocus="this.style.borderColor='#20b28c'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+        </div>
+      </div>
+      <button onclick="updateProfile()"
+        style="width:100%; margin-top:14px; padding:12px; border-radius:12px; background:#20b28c; border:none; color:white; font-size:14px; font-weight:600; cursor:pointer;">
+        💾 <span data-i18n="save_profile">Enregistrer les modifications</span>
+      </button>
+      <div id="profile-status" class="text-xs mt-2 text-center" style="color:#7ecab0;"></div>
+    </div>
+
+    <!-- Données locales -->
+    <div style="background:rgba(10,20,40,0.80); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; margin-bottom:16px;">
+      <h2 class="font-semibold mb-3 text-white" data-i18n="set_local">🗑️ Données locales</h2>
+      <button onclick="clearNotifs()"
+        style="padding:10px 20px; border-radius:10px; background:rgba(239,68,68,0.1); border:1px solid #ef4444; color:#ef4444; font-size:13px; cursor:pointer;"
+        data-i18n="set_clear">Effacer l'historique des notifications</button>
+    </div>
+
+    <!-- Zone danger -->
+    <div style="background:rgba(30,10,10,0.80); backdrop-filter:blur(16px); border:1px solid rgba(239,68,68,0.3); border-radius:16px; padding:24px;">
+      <h2 class="font-semibold mb-2" style="color:#ef4444">⚠️ <span data-i18n="set_delete_title">Zone dangereuse</span></h2>
+      <p class="text-xs mb-4" style="color:#9ca3af" data-i18n="set_delete_sub">
+        La suppression est <strong style="color:#ef4444">irréversible</strong> — toutes tes données seront effacées.
+      </p>
+      <button onclick="confirmDelete()"
+        style="padding:10px 24px; border-radius:10px; background:rgba(239,68,68,0.1); border:1px solid #ef4444; color:#ef4444; font-size:13px; font-weight:700; cursor:pointer;"
+        data-i18n="set_delete_btn">🗑️ Supprimer mon compte</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal confirmation suppression -->
+<div id="delete-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:999; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#0a1628; border:1px solid rgba(239,68,68,0.3); border-radius:20px; padding:40px; max-width:380px; width:100%; text-align:center;">
+    <div style="font-size:48px; margin-bottom:16px;">⚠️</div>
+    <h3 style="font-size:18px; font-weight:700; color:#ef4444; margin-bottom:8px;" data-i18n="set_delete_confirm_title">Confirmer la suppression</h3>
+    <p style="font-size:13px; color:#9ca3af; margin-bottom:24px;" data-i18n="set_delete_confirm_msg">Toutes tes données seront définitivement supprimées.</p>
+    <div class="flex gap-3">
+      <button onclick="document.getElementById('delete-modal').style.display='none'"
+        style="flex:1; padding:12px; border-radius:12px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1); color:#c9d9e0; font-size:13px; font-weight:600; cursor:pointer;"
+        data-i18n="cancel">Annuler</button>
+      <button onclick="deleteAccount()"
+        style="flex:1; padding:12px; border-radius:12px; background:#ef4444; border:none; color:white; font-size:13px; font-weight:700; cursor:pointer;"
+        data-i18n="set_delete_btn">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const _UID_S = '{{ session.user.id if session.user else "guest" }}';
+const _KS = (key) => `shhe_${_UID_S}_${key}`;
+
+function syncLangBtns() {
+  ['fr','en'].forEach(l => {
+    const b = document.getElementById('sl-'+l); if(!b) return;
+    b.style.borderColor = l===_lang ? '#20b28c' : 'rgba(255,255,255,0.1)';
+    b.style.background  = l===_lang ? 'rgba(32,178,140,0.15)' : 'rgba(255,255,255,0.05)';
+  });
+}
+
+function refreshSettingsStatus() {
+  const el = document.getElementById('set-perm-status'); if(!el) return;
+  if(!_notifEnabled){ el.textContent=T('notif_disabled'); el.style.color='#ef4444'; }
+  else if(Notification.permission==='granted'){ el.textContent=T('set_perm_granted'); el.style.color='#20b28c'; }
+  else if(Notification.permission==='denied'){ el.textContent=T('set_perm_denied'); el.style.color='#ef4444'; }
+  else{ el.textContent=T('set_perm_waiting'); el.style.color='#7ecab0'; }
+}
+
+function saveTimeSet() {
+  const v = document.getElementById('set-time').value;
+  if(v) {
+    localStorage.setItem(_KS('reminder_time'), v);
+    const inp = document.getElementById('reminder-time-input'); if(inp) inp.value = v;
+    showToast('✅','', T('toast_saved') + v);
+    if(_notifEnabled && Notification.permission==='granted') _startLoop();
+  }
+}
+
+function clearNotifs() {
+  localStorage.removeItem(_KS('notifs'));
+  localStorage.removeItem(_KS('notif_trigger'));
+  document.getElementById('notif-dot')?.classList.add('hidden');
+  showToast('🗑️','', T('set_cleared') || 'Effacé.');
+}
+
+async function updateProfile() {
+  const nom    = document.getElementById('edit-nom').value.trim();
+  const prenom = document.getElementById('edit-prenom').value.trim();
+  const email  = document.getElementById('edit-email').value.trim();
+  const status = document.getElementById('profile-status');
+  if(!nom||!prenom||!email){ status.textContent='⚠️ Tous les champs sont requis.'; status.style.color='#fbbf24'; return; }
+  const fd = new FormData(); fd.append('nom',nom); fd.append('prenom',prenom); fd.append('email',email);
+  try {
+    const d = await (await fetch('/settings/update_profile',{method:'POST',body:fd})).json();
+    status.textContent = d.success ? '✅ '+d.message : '❌ '+d.message;
+    status.style.color = d.success ? '#20b28c' : '#ef4444';
+    if(d.success) {
+  showToast('✅','', d.message);
+  setTimeout(() => window.location.reload(), 1000);
+}
+  } catch(e) { status.textContent='❌ Erreur réseau.'; status.style.color='#ef4444'; }
+}
+
+function confirmDelete() {
+  document.getElementById('delete-modal').style.display = 'flex';
+}
+
+async function deleteAccount() {
+  try {
+    const d = await (await fetch('/settings/delete_account',{method:'POST'})).json();
+    if(d.success){ localStorage.clear(); window.location.href = d.redirect; }
+    else showToast('❌','', d.message);
+  } catch(e) { showToast('❌','','Erreur réseau.'); }
+}
+
+function onLangChange(l) { syncLangBtns(); refreshSettingsStatus(); }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const t = localStorage.getItem(_KS('reminder_time'));
+  if(t) document.getElementById('set-time').value = t;
+  syncLangBtns();
+  refreshSettingsStatus();
+});
+</script>
+{% endblock %}

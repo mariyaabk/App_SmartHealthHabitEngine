@@ -1,0 +1,109 @@
+{% extends "base.html" %}{% block title %}Assistant IA — SHHE{% endblock %}
+{% block content %}
+<div class="flex flex-col" style="height:100vh">
+  <div class="p-5 pb-3 border-b border-[#21262d] bg-[#0d1117] flex-shrink-0">
+    <div class="flex items-center gap-3 mb-1">
+      <span class="text-2xl">🤖</span>
+      <div>
+        <h1 class="text-lg font-bold text-[#4fc3f7]" data-i18n="ai_title">Assistant IA Santé</h1>
+        <p class="text-xs text-[#6b7280]" data-i18n="ai_sub">Pose n'importe quelle question</p>
+      </div>
+    </div>
+    <div class="flex gap-2 mt-3 flex-wrap" id="quick-area"></div>
+  </div>
+  <div id="chat-area" class="flex-1 overflow-y-auto p-5 space-y-4">
+    <div class="flex gap-3 items-start">
+      <div class="w-8 h-8 rounded-full bg-[#0d2137] border border-[#4fc3f7] flex items-center justify-center flex-shrink-0 text-sm">🤖</div>
+      <div class="bg-[#161b22] border border-[#21262d] rounded-2xl rounded-tl-none px-4 py-3 max-w-xl">
+        <p class="text-sm text-[#e6edf3] leading-relaxed" id="welcome-msg"></p>
+      </div>
+    </div>
+    {% for conv in conv_hist %}
+    <div class="flex gap-3 justify-end items-start">
+      <div class="bg-[#0277bd] rounded-2xl rounded-tr-none px-4 py-3 max-w-lg"><p class="text-sm text-white">{{ conv.question }}</p></div>
+      <div class="w-8 h-8 rounded-full bg-[#0277bd] flex items-center justify-center flex-shrink-0 text-sm">👤</div>
+    </div>
+    <div class="flex gap-3 items-start">
+      <div class="w-8 h-8 rounded-full bg-[#0d2137] border border-[#4fc3f7] flex items-center justify-center flex-shrink-0 text-sm">🤖</div>
+      <div class="bg-[#161b22] border border-[#21262d] rounded-2xl rounded-tl-none px-4 py-3 max-w-xl">
+        <p class="text-sm text-[#e6edf3] leading-relaxed whitespace-pre-line">{{ conv.reponse }}</p>
+        <div class="text-xs text-[#6b7280] mt-1">{{ conv.date_heure }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="flex-shrink-0 p-4 border-t border-[#21262d] bg-[#161b22]">
+    <div class="flex gap-3 items-end">
+      <textarea id="chat-input" rows="1" data-i18n-ph="ai_placeholder"
+        class="flex-1 px-4 py-3 bg-[#0d1117] border border-[#30363d] rounded-xl text-[#e6edf3] placeholder-[#6b7280] focus:border-[#4fc3f7] focus:outline-none text-sm resize-none"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
+        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+      <button onclick="sendMsg()" id="send-btn"
+        class="btn-primary px-5 py-3 rounded-xl font-semibold text-sm flex-shrink-0 h-[46px]" data-i18n="ai_send">➤</button>
+    </div>
+    <div class="text-xs text-[#6b7280] mt-1.5 text-center" data-i18n="ai_hint">Entrée pour envoyer</div>
+  </div>
+</div>
+{% block scripts %}
+<script>
+const PRENOM = "{{ user.prenom }}";
+const chatArea = document.getElementById('chat-area');
+chatArea.scrollTop = chatArea.scrollHeight;
+
+function fmt(t){
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g,'<strong class="text-[#4fc3f7]">$1</strong>')
+    .replace(/\n/g,'<br>');
+}
+function buildQuick(){
+  const qa = T('ai_quick');
+  const el = document.getElementById('quick-area');
+  if(!el||!Array.isArray(qa)) return;
+  el.innerHTML = qa.map(q=>`<button onclick="sendQ(\`${q.replace(/`/g,"'")}\`)"
+    class="text-xs px-3 py-1.5 bg-[#161b22] text-[#8b949e] rounded-full border border-[#30363d] hover:border-[#4fc3f7] hover:text-[#c9d1d9] transition-all">${q}</button>`).join('');
+}
+function buildWelcome(){
+  const el=document.getElementById('welcome-msg');
+  if(el) el.innerHTML=fmt(T('ai_welcome').replace('{prenom}',PRENOM));
+}
+function addMsg(role,text){
+  const isU=role==='user';
+  const w=document.createElement('div');
+  w.className='flex gap-3 items-start'+(isU?' justify-end':'');
+  w.innerHTML=isU
+    ?`<div class="bg-[#0277bd] rounded-2xl rounded-tr-none px-4 py-3 max-w-lg"><p class="text-sm text-white">${text.replace(/</g,'&lt;')}</p></div><div class="w-8 h-8 rounded-full bg-[#0277bd] flex items-center justify-center flex-shrink-0 text-sm">👤</div>`
+    :`<div class="w-8 h-8 rounded-full bg-[#0d2137] border border-[#4fc3f7] flex items-center justify-center flex-shrink-0 text-sm">🤖</div><div class="bg-[#161b22] border border-[#21262d] rounded-2xl rounded-tl-none px-4 py-3 max-w-xl"><p class="text-sm text-[#e6edf3] leading-relaxed">${fmt(text)}</p></div>`;
+  chatArea.appendChild(w); chatArea.scrollTop=chatArea.scrollHeight;
+}
+function addTyping(){
+  const d=document.createElement('div'); d.id='typing'; d.className='flex gap-3 items-start';
+  d.innerHTML=`<div class="w-8 h-8 rounded-full bg-[#0d2137] border border-[#4fc3f7] flex items-center justify-center flex-shrink-0 text-sm">🤖</div>
+    <div class="bg-[#161b22] border border-[#21262d] rounded-2xl px-4 py-3">
+      <div class="flex gap-1.5 items-center h-5">
+        <div class="w-2 h-2 rounded-full bg-[#4fc3f7] animate-bounce" style="animation-delay:0ms"></div>
+        <div class="w-2 h-2 rounded-full bg-[#4fc3f7] animate-bounce" style="animation-delay:150ms"></div>
+        <div class="w-2 h-2 rounded-full bg-[#4fc3f7] animate-bounce" style="animation-delay:300ms"></div>
+      </div>
+    </div>`;
+  chatArea.appendChild(d); chatArea.scrollTop=chatArea.scrollHeight; return d;
+}
+async function sendMsg(){
+  const inp=document.getElementById('chat-input');
+  const q=inp.value.trim(); if(!q) return;
+  inp.value=''; inp.style.height='auto';
+  addMsg('user',q);
+  const btn=document.getElementById('send-btn'); btn.disabled=true;
+  const typ=addTyping();
+  try{
+    const r=await fetch('/assistant/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});
+    const d=await r.json(); typ.remove(); addMsg('assistant',d.reponse);
+  }catch(e){typ.remove();addMsg('assistant',T('ai_error'));}
+  btn.disabled=false;
+}
+function sendQ(q){document.getElementById('chat-input').value=q;sendMsg();}
+function onLangChange(l){ buildQuick(); buildWelcome();
+  const inp=document.getElementById('chat-input'); if(inp) inp.placeholder=T('ai_placeholder');
+}
+buildQuick(); buildWelcome();
+document.getElementById('chat-input').placeholder=T('ai_placeholder');
+</script>{% endblock %}{% endblock %}

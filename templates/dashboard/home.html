@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Home — SHHE{% endblock %}
+{% block content %}
+<div class="p-6 space-y-5">
+
+  <!-- ── HEADER BANNER avec illustration ───────────────────────────────── -->
+  <div class="relative rounded-2xl overflow-hidden" style="background: linear-gradient(135deg, #0d1f2d 0%, #0a2a2a 60%, #0d2b1e 100%); min-height:160px">
+    <!-- Illustration silhouette méditation -->
+    <div class="absolute right-0 top-0 bottom-0 w-72 opacity-60" style="
+      background: radial-gradient(ellipse at 80% 50%, rgba(32,178,140,0.25) 0%, transparent 70%);
+    "></div>
+    <svg class="absolute right-6 bottom-0 opacity-50" width="200" height="155" viewBox="0 0 200 155" fill="none">
+      <!-- Lune -->
+      <circle cx="130" cy="55" r="50" fill="rgba(32,178,140,0.15)" stroke="rgba(32,178,140,0.3)" stroke-width="1"/>
+      <circle cx="130" cy="55" r="35" fill="rgba(32,178,140,0.12)"/>
+      <!-- Silhouette méditation -->
+      <ellipse cx="100" cy="148" rx="38" ry="6" fill="rgba(0,0,0,0.4)"/>
+      <path d="M100 105 C85 105 78 118 78 128 C78 138 88 143 100 143 C112 143 122 138 122 128 C122 118 115 105 100 105Z" fill="#0d3d2e"/>
+      <path d="M72 128 C65 125 58 128 55 133 C52 138 56 143 62 143 L100 143 L138 143 C144 143 148 138 145 133 C142 128 135 125 128 128" fill="#0d3d2e"/>
+      <circle cx="100" cy="99" r="9" fill="#0d3d2e"/>
+      <!-- Montagne -->
+      <path d="M0 155 L50 80 L100 120 L140 60 L200 155Z" fill="rgba(10,30,25,0.7)"/>
+      <path d="M0 155 L60 100 L110 135 L155 75 L200 155Z" fill="rgba(8,25,20,0.9)"/>
+      <!-- Oiseaux -->
+      <path d="M155 30 C157 28 160 28 162 30" stroke="rgba(32,178,140,0.6)" stroke-width="1.5" fill="none"/>
+      <path d="M168 25 C170 23 173 23 175 25" stroke="rgba(32,178,140,0.6)" stroke-width="1.5" fill="none"/>
+    </svg>
+
+    <div class="relative z-10 p-7">
+      <h1 class="text-3xl font-bold text-white mb-1">
+        {{ user.prenom }} {{ user.nom }} 👋
+      </h1>
+      <p class="text-sm" style="color:#7ecab0" data-i18n="dash_welcome">
+        Welcome to your personal wellness dashboard.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── STAT CARDS ─────────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-3 gap-4">
+
+    <!-- Days tracked -->
+    <div class="rounded-2xl p-5 flex items-center gap-4" style="background:#111c2a; border:1px solid #1a2d3d">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(59,130,246,0.15)">
+        <svg width="24" height="24" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+          <circle cx="8" cy="15" r="1" fill="#3b82f6"/><circle cx="12" cy="15" r="1" fill="#3b82f6"/><circle cx="16" cy="15" r="1" fill="#3b82f6"/>
+        </svg>
+      </div>
+      <div>
+        <div class="text-sm mb-1" style="color:#6b8a9e" data-i18n="dash_days">Days tracked</div>
+        <div class="text-3xl font-bold text-white">{{ stats.total_jours or 0 }}</div>
+      </div>
+    </div>
+
+    <!-- Average score -->
+    <div class="rounded-2xl p-5 flex items-center gap-4" style="background:#111c2a; border:1px solid #1a2d3d">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(32,178,140,0.15)">
+        <svg width="24" height="24" fill="none" stroke="#20b28c" stroke-width="2.5" viewBox="0 0 24 24">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+        </svg>
+      </div>
+      <div>
+        <div class="text-sm mb-1" style="color:#6b8a9e" data-i18n="dash_avg">Average score</div>
+        <div class="text-3xl font-bold" style="color:#20b28c">
+          {{ stats.moyenne_globale or 0 }}<span class="text-lg">/100</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Best score -->
+    <div class="rounded-2xl p-5 flex items-center gap-4" style="background:#111c2a; border:1px solid #1a2d3d">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(251,191,36,0.15)">
+        <svg width="24" height="24" fill="none" stroke="#fbbf24" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M6 9H4a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-2"/>
+          <path d="M6 9V5a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v4"/><path d="M6 13v3a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-3"/>
+          <path d="M9 21h6"/><path d="M12 18v3"/>
+        </svg>
+      </div>
+      <div>
+        <div class="text-sm mb-1" style="color:#6b8a9e" data-i18n="dash_best">Best score</div>
+        <div class="text-3xl font-bold" style="color:#fbbf24">
+          {{ stats.meilleur_score or 0 }}<span class="text-lg">/100</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── CTA questionnaire ──────────────────────────────────────────────── -->
+  {% if today_done %}
+  <a href="/stats" class="flex items-center justify-center gap-3 rounded-2xl p-5 transition-all hover:opacity-90"
+    style="background:#0a2a20; border:1.5px solid #20b28c">
+    <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style="background:#20b28c">
+      <svg width="14" height="14" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <span class="font-semibold text-lg" style="color:#20b28c" data-i18n="dash_done">Questionnaire done! See my stats →</span>
+  </a>
+  {% else %}
+  <a href="/questionnaire" class="flex items-center justify-center gap-3 rounded-2xl p-5 transition-all hover:opacity-90"
+    style="background: linear-gradient(135deg, #0d4f3c, #0a3a2a); border:1.5px solid #20b28c">
+    <span class="text-xl">📋</span>
+    <span class="font-semibold text-lg text-white" data-i18n="dash_cta">Fill in today's questionnaire →</span>
+  </a>
+  {% endif %}
+
+  <!-- ── HISTORIQUE 7 JOURS ─────────────────────────────────────────────── -->
+  {% if historique %}
+  <div class="rounded-2xl p-6" style="background:#111c2a; border:1px solid #1a2d3d">
+    <div class="flex items-center gap-2 mb-5">
+      <svg width="20" height="20" fill="none" stroke="#20b28c" stroke-width="2.5" viewBox="0 0 24 24">
+        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+      </svg>
+      <h2 class="font-semibold text-white" data-i18n="dash_recent">Last 7 days</h2>
+    </div>
+    <div class="space-y-3">
+      {% for row in historique %}
+      {% set nc = {'Excellent':'#20b28c','Bon':'#3b82f6','Moyen':'#fbbf24','Faible':'#f97316','Critique':'#ef4444'} %}
+      {% set color = nc.get(row.niveau, '#3b82f6') %}
+      <div class="flex items-center justify-between rounded-xl px-4 py-3" style="background:#0d1520">
+        <span class="text-sm" style="color:#6b8a9e">{{ row.date_score }}</span>
+        <div class="flex items-center gap-4">
+          <div class="w-36 rounded-full h-1.5" style="background:#1a2d3d">
+            <div class="h-1.5 rounded-full transition-all" style="width:{{ row.score_global }}%; background:{{ color }}"></div>
+          </div>
+          <span class="font-bold text-sm w-20 text-right" style="color:{{ color }}">{{ row.score_global }}/100</span>
+          <span class="text-xs w-16 text-right niv-badge" style="color:{{ color }}" data-niv="{{ row.niveau }}">{{ row.niveau }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="rounded-2xl p-10 text-center" style="background:#111c2a; border:1px solid #1a2d3d">
+    <div class="text-5xl mb-4">📋</div>
+    <p style="color:#6b8a9e" data-i18n="dash_no_data">No data yet. Fill in your first questionnaire!</p>
+  </div>
+  {% endif %}
+
+</div>
+
+{% block scripts %}
+<script>
+function onLangChange(l) {
+  document.querySelectorAll('.niv-badge').forEach(el => {
+    el.textContent = T('niv_' + el.dataset.niv) || el.dataset.niv;
+  });
+}
+</script>
+{% endblock %}
+{% endblock %}

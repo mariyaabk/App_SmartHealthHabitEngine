@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Rapport PDF — SHHE{% endblock %}
+
+{% block content %}
+<!-- Fond image -->
+<div style="position:fixed; inset:0; z-index:0; background-image:url('/static/img/bg_pages.jpg'); background-size:cover; background-position:center;">
+  <div style="position:absolute; inset:0; background:rgba(5,10,22,0.72);"></div>
+</div>
+
+<!-- Contenu centré -->
+<div style="position:relative; z-index:1; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px;">
+  <div style="width:100%; max-width:580px;">
+
+    <h1 class="text-2xl font-bold mb-2" style="color:#4fc3f7" data-i18n="rapport_title">📄 Générer un rapport PDF</h1>
+    <p class="text-sm mb-6" style="color:#7ecab0" data-i18n="rapport_sub">Téléchargez ou envoyez par email.</p>
+
+    <!-- Options -->
+    <div style="background:rgba(10,20,40,0.80); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; margin-bottom:16px;">
+      <h2 class="font-semibold mb-4 text-white" data-i18n="rapport_options">⚙️ Options</h2>
+      <label class="block text-sm mb-2" style="color:#7ecab0" data-i18n="rapport_period">Période</label>
+      <div class="flex gap-4 flex-wrap">
+        {% for k,v in [('rapport_7','7'),('rapport_30','30'),('rapport_90','90'),('rapport_all','365')] %}
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="periode" value="{{ v }}" {% if v=='30' %}checked{% endif %} class="accent-[#20b28c]">
+          <span class="text-sm text-white" data-i18n="{{ k }}">{{ k }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Télécharger -->
+    <div style="background:rgba(10,20,40,0.80); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; margin-bottom:16px;">
+      <h2 class="font-semibold mb-1 text-white" data-i18n="rapport_dl_title">📥 Télécharger</h2>
+      <p class="text-xs mb-4" style="color:#7ecab0" data-i18n="rapport_dl_sub">Rien à configurer.</p>
+      <button onclick="dlPDF()" id="btn-dl"
+        style="width:100%; padding:14px; border-radius:12px; font-weight:700; color:white; font-size:14px; border:none; cursor:pointer; background:linear-gradient(135deg,#6b21a8,#7c3aed); box-shadow:0 4px 20px rgba(107,33,168,0.4); transition:opacity 0.2s;"
+        onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+        <span data-i18n="rapport_dl_btn">📄 Télécharger le rapport PDF</span>
+      </button>
+    </div>
+
+    <!-- Email -->
+    <div style="background:rgba(10,20,40,0.80); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; margin-bottom:16px;">
+      <h2 class="font-semibold mb-1 text-white" data-i18n="rapport_email_title">📧 Envoyer par email</h2>
+      <div class="space-y-3 mt-3">
+        <div>
+          <label class="block text-xs mb-1" style="color:#7ecab0" data-i18n="rapport_sender">Email expéditeur (Gmail)</label>
+          <input type="email" id="sender-email" placeholder="moncompte@gmail.com" data-i18n-ph="placeholder_sender_email"
+            style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.06); color:white; font-size:13px; outline:none; box-sizing:border-box;"
+            onfocus="this.style.borderColor='#20b28c'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+        </div>
+        <div>
+          <label class="block text-xs mb-1" style="color:#7ecab0" data-i18n="rapport_pass">App Password Gmail</label>
+          <input type="password" id="sender-password" placeholder="xxxx xxxx xxxx xxxx" data-i18n-ph="placeholder_sender_password"
+            style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.06); color:white; font-size:13px; outline:none; box-sizing:border-box;"
+            onfocus="this.style.borderColor='#20b28c'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+        </div>
+        <div>
+          <label class="block text-xs mb-1" style="color:#7ecab0" data-i18n="rapport_dest">Email destinataire</label>
+          <input type="email" id="email-dest" value="{{ user.email }}"
+            style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.06); color:white; font-size:13px; outline:none; box-sizing:border-box;"
+            onfocus="this.style.borderColor='#20b28c'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+        </div>
+      </div>
+      <button onclick="sendEmail()" id="btn-email"
+        style="width:100%; margin-top:14px; padding:14px; border-radius:12px; font-weight:700; color:white; font-size:14px; border:none; cursor:pointer; background:#20b28c; box-shadow:0 4px 20px rgba(32,178,140,0.4); transition:opacity 0.2s;"
+        onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+        <span data-i18n="rapport_send_btn">📧 Générer & Envoyer par email</span>
+      </button>
+    </div>
+
+    <!-- Log -->
+    <div id="log" class="hidden" style="background:rgba(10,20,40,0.80); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:16px;">
+      <div class="flex items-center gap-2"><span id="log-i">⏳</span><span id="log-t" style="font-size:13px; color:#c9d9e0;"></span></div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function log(icon,msg,col){
+  const b=document.getElementById('log'); b.classList.remove('hidden');
+  document.getElementById('log-i').textContent=icon;
+  const lt=document.getElementById('log-t'); lt.textContent=msg; lt.style.color=col||'#c9d9e0';
+}
+async function dlPDF(){
+  const btn=document.getElementById('btn-dl'); btn.disabled=true;
+  log('⏳',T('rapport_generating')||'Génération...','#8b949e');
+  const fd=new FormData(); fd.append('periode',document.querySelector('[name="periode"]:checked').value);
+  try{
+    const r=await fetch('/rapport/generate',{method:'POST',body:fd});
+    if(r.ok&&r.headers.get('content-type')?.includes('pdf')){
+      const a=document.createElement('a'); a.href=URL.createObjectURL(await r.blob());
+      a.download='rapport_sante.pdf'; a.click(); log('✅',T('rapport_downloaded')||'Téléchargé !','#20b28c');
+    }else{const d=await r.json();log('❌',d.message,'#ef4444');}
+  }catch(e){log('❌','Erreur: '+e.message,'#ef4444');}
+  btn.disabled=false;
+}
+async function sendEmail(){
+  const se=document.getElementById('sender-email').value.trim();
+  const sp=document.getElementById('sender-password').value.trim();
+  const de=document.getElementById('email-dest').value.trim();
+  if(!se||!sp||!de){log('⚠️',T('rapport_fill_all')||'Remplis tous les champs.','#fbbf24');return;}
+  if(!se.endsWith('@gmail.com')){log('⚠️',T('rapport_gmail_only')||'Gmail uniquement.','#fbbf24');return;}
+  const btn=document.getElementById('btn-email'); btn.disabled=true;
+  log('⏳',T('rapport_sending')||'Envoi...','#8b949e');
+  const fd=new FormData();
+  fd.append('periode',document.querySelector('[name="periode"]:checked').value);
+  fd.append('email_dest',de); fd.append('sender_email',se); fd.append('sender_password',sp);
+  try{
+    const d=await (await fetch('/rapport/generate',{method:'POST',body:fd})).json();
+    log(d.success?'✅':'❌',d.message,d.success?'#20b28c':'#ef4444');
+    if(d.success) document.getElementById('sender-password').value='';
+  }catch(e){log('❌','Erreur: '+e.message,'#ef4444');}
+  btn.disabled=false;
+}
+</script>
+{% endblock %}

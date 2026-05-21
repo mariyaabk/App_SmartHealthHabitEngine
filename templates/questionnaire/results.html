@@ -1,0 +1,38 @@
+{% extends "base.html" %}{% block title %}Résultats — SHHE{% endblock %}
+{% block content %}
+{% set nc = {'Excellent':'#69f0ae','Bon':'#4fc3f7','Moyen':'#ffd740','Faible':'#ff7043','Critique':'#f85149'} %}
+{% set color = nc.get(scores.niveau,'#4fc3f7') %}
+<div class="p-8 max-w-3xl mx-auto">
+  <div class="card p-8 text-center mb-6">
+    <div class="text-5xl mb-3">🎉</div>
+    <h1 class="text-2xl font-bold text-[#e6edf3] mb-2" data-i18n="q_result_title">Questionnaire complété !</h1>
+    <div class="text-5xl font-bold mt-4" style="color:{{ color }}">{{ scores.score_global }}<span class="text-2xl">/100</span></div>
+    <div class="text-lg mt-2" style="color:{{ color }}" id="niv-lbl" data-niv="{{ scores.niveau }}">{{ scores.niveau }}</div>
+  </div>
+  <div class="grid grid-cols-5 gap-3 mb-6">
+    {% for emoji,dk,val in [('🌙','stats_sommeil',scores.score_sommeil),('😌','stats_stress',scores.score_stress),('🧠','stats_conc',scores.score_concentration),('🏃','stats_activ',scores.score_activite),('🥗','stats_nutri',scores.score_nutrition)] %}
+    {% set c = '#69f0ae' if val>=70 else ('#ffd740' if val>=50 else '#f85149') %}
+    <div class="card p-4 text-center">
+      <div class="text-xl mb-1">{{ emoji }}</div>
+      <div class="text-xs text-[#8b949e] mb-2" data-i18n="{{ dk }}">{{ dk }}</div>
+      <div class="text-2xl font-bold" style="color:{{ c }}">{{ val }}</div>
+      <div class="mt-2 bg-[#21262d] rounded-full h-1.5"><div class="h-1.5 rounded-full" style="width:{{ val }}%;background:{{ c }}"></div></div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="card p-6 mb-6">
+    <h2 class="text-lg font-semibold text-[#ffd740] mb-4" data-i18n="q_conseils">💡 Conseils personnalisés</h2>
+    <ul class="space-y-3">{% for c in conseils %}<li class="text-sm text-[#c9d1d9] bg-[#0d1117] rounded-lg px-4 py-3">{{ c }}</li>{% endfor %}</ul>
+  </div>
+  <div class="grid grid-cols-2 gap-4">
+    <a href="/stats" class="btn-primary text-center py-4 rounded-xl font-semibold" data-i18n="q_see_stats">📊 Voir mes stats →</a>
+    <a href="/dashboard" class="bg-[#21262d] text-[#c9d1d9] text-center py-4 rounded-xl font-semibold hover:bg-[#30363d]" data-i18n="nav_home">🏠 Accueil</a>
+  </div>
+</div>
+{% block scripts %}
+<script>
+function onLangChange(l) {
+  const el = document.getElementById('niv-lbl');
+  if(el) el.textContent = T('niv_'+el.dataset.niv) || el.dataset.niv;
+}
+</script>{% endblock %}{% endblock %}

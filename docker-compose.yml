@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+
+  # ── Application Flask ────────────────────────────────────────────────────────
+  app:
+    build: .
+    container_name: shhe_app
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=shhe_user
+      - DB_PASSWORD=shhe_password
+      - DB_NAME=smart_health_db
+      - SECRET_KEY=change_me_in_production
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+    restart: unless-stopped
+
+  # ── Base de données MySQL ────────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: shhe_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: smart_health_db
+      MYSQL_USER: shhe_user
+      MYSQL_PASSWORD: shhe_password
+    ports:
+      - "3307:3306"   # 3307 pour ne pas confliter avec MySQL local
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "shhe_user", "-pshhe_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  mysql_data:

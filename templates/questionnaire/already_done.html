@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block title %}Déjà complété — SHHE{% endblock %}
+{% block content %}
+<div class="p-8 flex items-center justify-center min-h-screen">
+  <div class="card p-12 text-center max-w-md">
+    <div class="text-6xl mb-4"></div> 
+    <div class="text-5xl mb-4">✅</div>
+    <h2 class="text-xl font-bold text-[#69f0ae] mb-2" data-i18n="q_done_title">Questionnaire déjà complété !</h2>
+    <p class="text-[#8b949e] mb-6" data-i18n="q_done_msg">Reviens demain. 🌟</p>
+    <a href="/stats" class="btn-primary px-8 py-3 rounded-lg font-semibold inline-block" data-i18n="q_done_btn">Voir mes statistiques →</a>
+  </div>
+</div>{% endblock %}
