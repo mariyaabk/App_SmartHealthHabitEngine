@@ -66,7 +66,7 @@ window.SHHE_T = {
     // Dashboard
     dash_welcome:"Bienvenue sur votre tableau de bord de bien-être personnel.",
     dash_days:"Jours suivis", dash_avg:"Score moyen", dash_best:"Meilleur score",
-    dash_cta:"📋 Remplir le questionnaire d'aujourd'hui →",
+    dash_cta:"Remplir le questionnaire d'aujourd'hui →",
     dash_done:"✅ Questionnaire complété ! Voir mes stats →",
     dash_recent:"📈 7 derniers jours",
     dash_no_data:"Aucune donnée. Remplis ton premier questionnaire !",
@@ -227,7 +227,7 @@ window.SHHE_T = {
     toast_saved:"Reminder set at ",
     dash_welcome:"Welcome to your personal wellness dashboard.",
     dash_days:"Days tracked", dash_avg:"Average score", dash_best:"Best score",
-    dash_cta:"📋 Fill in today's questionnaire →",
+    dash_cta:"Fill in today's questionnaire →",
     dash_done:"✅ Questionnaire done! See my stats →",
     dash_recent:"📈 Last 7 days",
     dash_no_data:"No data yet. Fill in your first questionnaire!",
